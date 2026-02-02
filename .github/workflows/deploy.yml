@@ -19,20 +19,25 @@ jobs:
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    - name: Setup gcloud
+    - name: Setup gcloud SDK
       uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: neat-pagoda-477804-m8
 
-    - name: Get GKE Credentials
+    - name: Install GKE Auth Plugin
+      run: |
+        gcloud components install gke-gcloud-auth-plugin --quiet
+
+    - name: Get GKE Cluster Credentials
       run: |
         gcloud container clusters get-credentials gke \
-        --zone us-central1-a
+        --zone us-central1-a \
+        --project neat-pagoda-477804-m8
 
     - name: Install Helm
       run: |
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-    - name: Deploy Using Helm
+    - name: Deploy Application Using Helm
       run: |
         helm upgrade --install poc-release .
