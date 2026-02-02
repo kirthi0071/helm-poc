@@ -14,28 +14,32 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
+    # Authenticate to GCP
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v1
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    - name: Setup gcloud SDK
+    # Setup gcloud SDK
+    - name: Setup gcloud
       uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: neat-pagoda-477804-m8
 
-    # ✅ THIS IS THE FIX
-    - name: Get GKE Credentials
-      uses: google-github-actions/get-gke-credentials@v1
+    # IMPORTANT FIX
+    - name: Get GKE Credentials (New Auth)
+      uses: google-github-actions/get-gke-credentials@v2
       with:
         cluster_name: gke
         location: us-central1-a
         project_id: neat-pagoda-477804-m8
 
+    # Install Helm
     - name: Install Helm
       run: |
-        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+        curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-    - name: Deploy Using Helm
+    # Deploy using Helm
+    - name: Deploy Helm Chart
       run: |
         helm upgrade --install poc-release .
