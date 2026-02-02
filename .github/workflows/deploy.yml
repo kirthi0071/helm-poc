@@ -14,7 +14,7 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    - name: Authenticate to GCP
+    - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v1
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
@@ -24,20 +24,18 @@ jobs:
       with:
         project_id: neat-pagoda-477804-m8
 
-    - name: Install GKE Auth Plugin
-      run: |
-        gcloud components install gke-gcloud-auth-plugin --quiet
-
-    - name: Get GKE Cluster Credentials
-      run: |
-        gcloud container clusters get-credentials gke \
-        --zone us-central1-a \
-        --project neat-pagoda-477804-m8
+    # ✅ THIS IS THE FIX
+    - name: Get GKE Credentials
+      uses: google-github-actions/get-gke-credentials@v1
+      with:
+        cluster_name: gke
+        location: us-central1-a
+        project_id: neat-pagoda-477804-m8
 
     - name: Install Helm
       run: |
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-    - name: Deploy Application Using Helm
+    - name: Deploy Using Helm
       run: |
         helm upgrade --install poc-release .
