@@ -26,7 +26,7 @@ jobs:
 
     - name: Get GKE Credentials
       run: |
-        gcloud container clusters get-credentials helm-poc \
+        gcloud container clusters get-credentials gke \
         --zone us-central1-a
 
     - name: Install Helm
