@@ -1,4 +1,4 @@
-name: Helm Deploy to GKE
+name: Build and Push Docker Image to GCP
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -14,32 +14,19 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Authenticate to GCP
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v1
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    # Setup gcloud SDK
-    - name: Setup gcloud
-      uses: google-github-actions/setup-gcloud@v1
-      with:
-        project_id: neat-pagoda-477804-m8
-
-    # IMPORTANT FIX
-    - name: Get GKE Credentials (New Auth)
-      uses: google-github-actions/get-gke-credentials@v2
-      with:
-        cluster_name: gke
-        location: us-central1-a
-        project_id: neat-pagoda-477804-m8
-
-    # Install Helm
-    - name: Install Helm
+    - name: Configure Docker for Artifact Registry
       run: |
-        curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+        gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
-    # Deploy using Helm
-    - name: Deploy Helm Chart
+    - name: Build Docker Image
       run: |
-        helm upgrade --install poc-release .
+        docker build -t us-central1-docker.pkg.dev/neat-pagoda-477804-m8/my-docker-repo/myapp:latest .
+
+    - name: Push Docker Image
+      run: |
+        docker push us-central1-docker.pkg.dev/neat-pagoda-477804-m8/my-docker-repo/myapp:latest
